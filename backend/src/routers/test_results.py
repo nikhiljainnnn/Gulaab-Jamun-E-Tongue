@@ -4,7 +4,7 @@ from database import get_session
 from src.models.models import TestResult, Herb
 from src.schema.test_results import TestResultCreate, TestResultRead
 
-router = APIRouter()
+router = APIRouter() #this is the router for the test results endpoints
 
 # Get all test results
 @router.get("/testresults/", response_model=list[TestResultRead])
@@ -20,7 +20,7 @@ def create_testresult(testresult: TestResultCreate, session: Session = Depends(g
     if not herb:
         raise HTTPException(status_code=404, detail="Herb not found")
 
-    new_result = TestResult(
+    new_result = TestResult(                  #create schema for the test result
         batch_id=testresult.batch_id,
         raw_data=testresult.raw_data,
         herb_id=testresult.herb_id,

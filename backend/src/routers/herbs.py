@@ -1,5 +1,3 @@
-# backend/src/routers/herbs.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 import sys

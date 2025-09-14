@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 from src.schema.test_results import TestResultRead  # import for nested results to herbs
 
+
+#this is the base model for the hebs
 class HerbBase(BaseModel):
     name: str
     scientific_name: Optional[str] = None
@@ -9,8 +11,11 @@ class HerbBase(BaseModel):
     uses: Optional[str] = None
     references: Optional[str] = None
 
+
+    #schema for creating a new herb
+
 class HerbCreate(HerbBase):
-    pass
+    pass     #pass means that the class is empty
 
 class HerbRead(HerbBase):
     id: int
