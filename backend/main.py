@@ -1,22 +1,17 @@
-# main.py (at backend/main.py)
-from fastapi import FastAPI
-from sqlmodel import SQLModel
-from database import engine
-# if your model import is required elsewhere keep it; otherwise it's optional here
-# from src.models.models import Herb
 
-# import our new router
+from fastapi import FastAPI
 from src.routers.herbs import router as herbs_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Gulaab Jamun E-Tongue API",
+    description="API for managing herbs and taste data",
+    version="1.0.0"
+)
 
-@app.on_event("startup")
-def on_startup():
-    SQLModel.metadata.create_all(engine)
+# This will Include the herbs router
+app.include_router(herbs_router)
 
-# mount the herbs router at /herbs
-app.include_router(herbs_router, prefix="/herbs", tags=["herbs"])
-
+# Root endpoint
 @app.get("/")
-def read_root():
-    return {"message": "Hello from FastAPI with DB!"}
+def root():
+    return {"message": "Welcome to Gulaab Jamun E-Tongue API"}
