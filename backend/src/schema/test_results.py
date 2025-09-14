@@ -1,12 +1,19 @@
 from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-class TestResultCreate(BaseModel):
-    herb_id: int
+class TestResultBase(BaseModel):
     batch_id: str
     raw_data: str
 
-class TestResultRead(TestResultCreate):
+class TestResultCreate(TestResultBase):
+    herb_id: int
+
+class TestResultRead(TestResultBase):
     id: int
+    herb_id: int
     timestamp: datetime
+
+    class Config:
+        orm_mode = True
+

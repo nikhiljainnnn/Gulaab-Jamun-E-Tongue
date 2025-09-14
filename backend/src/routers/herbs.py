@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from database import get_session              # backend/database.py
 from src.models.models import Herb            # SQLModel Herb
-from src.schema.herbs import HerbCreate, HerbRead, HerbUpdate  # Pydantic schemas
+from src.schema.herbs import HerbCreate, HerbRead  # Pydantic schemas
 
 router = APIRouter(
     prefix="/herbs",
@@ -41,18 +41,19 @@ def create_herb(herb: HerbCreate, session: Session = Depends(get_session)):
     session.refresh(new_herb)
     return new_herb
 
-# PUT to update an existing herb
-@router.put("/{herb_id}", response_model=HerbRead)
-def update_herb(herb_id: int, herb_data: HerbUpdate, session: Session = Depends(get_session)):
-    herb = session.get(Herb, herb_id)
-    if not herb:
-        raise HTTPException(status_code=404, detail="Herb not found")
-    for key, value in herb_data.dict(exclude_unset=True).items():
-        setattr(herb, key, value)
-    session.add(herb)
-    session.commit()
-    session.refresh(herb)
-    return herb
+# baad me update karna hai
+
+# @router.put("/{herb_id}", response_model=HerbRead)
+# def update_herb(herb_id: int, herb_data: HerbUpdate, session: Session = Depends(get_session)):
+#     herb = session.get(Herb, herb_id)
+#     if not herb:
+#         raise HTTPException(status_code=404, detail="Herb not found")
+#     for key, value in herb_data.dict(exclude_unset=True).items():
+#         setattr(herb, key, value)
+#     session.add(herb)
+#     session.commit()
+#     session.refresh(herb)
+#     return herb
 
 # DELETE a herb
 @router.delete("/{herb_id}")
@@ -63,4 +64,3 @@ def delete_herb(herb_id: int, session: Session = Depends(get_session)):
     session.delete(herb)
     session.commit()
     return {"message": "Herb deleted successfully"}
-    
