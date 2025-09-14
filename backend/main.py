@@ -1,6 +1,5 @@
-
 from fastapi import FastAPI
-from src.routers.herbs import router as herbs_router
+from src.routers import herbs, test_results
 
 app = FastAPI(
     title="Gulaab Jamun E-Tongue API",
@@ -8,10 +7,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# This will Include the herbs router
-app.include_router(herbs_router)
+app.include_router(herbs.router)
+app.include_router(test_results.router)
 
-# Root endpoint
 @app.get("/")
 def root():
     return {"message": "Welcome to Gulaab Jamun E-Tongue API"}
