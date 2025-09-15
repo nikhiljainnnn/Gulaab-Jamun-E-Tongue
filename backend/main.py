@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-from src.routers import herbs, test_results         #import routers for herbs and test results
+from src.routers import herbs, test_results
+from src.routers import predict  
+from src.routers import herbs, test_results, predict      #import routers for herbs and test results
 
 
 #here we are creating the fastapi app
@@ -12,6 +14,7 @@ app = FastAPI(
 # Including routers so that they can be used in the app
 app.include_router(herbs.router)
 app.include_router(test_results.router)
+app.include_router(predict.router)
 
 
 #this is the root endpoint with the message "Welcome to Gulaab Jamun E-Tongue API"
