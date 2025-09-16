@@ -1,21 +1,33 @@
 from pydantic import BaseModel
 
-# 🟢 Input schema: what the frontend sends when asking for a prediction
-class PredictRequest(BaseModel):
-    # Add the sensor features your model actually needs (without optical absorbance)
-    # Example features (replace with your real ones):
-    ph: float
-    conductivity: float
-    bitterness_signal: float
-    sourness_signal: float
-    sweetness_signal: float
-    saltiness_signal: float
+class TasteFeatures(BaseModel):
+    # 7 taste sensor readings
+    sensor_1: float
+    sensor_2: float
+    sensor_3: float
+    sensor_4: float
+    sensor_5: float
+    sensor_6: float
+    sensor_7: float
 
+    # 15 phytochemical values
+    phytochem_1: float
+    phytochem_2: float
+    phytochem_3: float
+    phytochem_4: float
+    phytochem_5: float
+    phytochem_6: float
+    phytochem_7: float
+    phytochem_8: float
+    phytochem_9: float
+    phytochem_10: float
+    phytochem_11: float
+    phytochem_12: float
+    phytochem_13: float
+    phytochem_14: float
+    phytochem_15: float
 
-# 🔵 Output schema: what your API will return to the frontend
-class PredictResponse(BaseModel):
-    # The predicted taste class/label from the ML model
-    predicted_label: str
-
-    # (Optional) The confidence/probability of the prediction
-    confidence: float | None = None
+    # Environmental features
+    pH: float
+    temperature: float
+    TDS: float

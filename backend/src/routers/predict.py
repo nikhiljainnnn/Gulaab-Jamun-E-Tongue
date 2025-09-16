@@ -1,30 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
+from fastapi import APIRouter
 from src.ml.service import predict_taste
 
-# Request schema for prediction input
-class PredictRequest(BaseModel):
-    features: List[float]  # List of sensor values
+router = APIRouter()
 
-# Response schema for prediction output
-class PredictResponse(BaseModel):
-    herb_prediction: int
-    quality_prediction: int
+@router.post("/predict")
+def predict(data: dict):
+    result = predict_taste(data)
+    return result
 
-# Router setup
-router = APIRouter(
-    prefix="/predict",
-    tags=["Prediction"]
-)
-
-@router.post("/", response_model=PredictResponse)
-def predict(request: PredictRequest):
-    """
-    Predict herb type and quality based on sensor input values.
-    """
-    try:
-        result = predict_taste(request.features)
-        return PredictResponse(**result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

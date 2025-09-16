@@ -1,40 +1,22 @@
 import os
-import numpy as np
-import xgboost as xgb
+import joblib
 
-# Paths to model files inside the ml folder
-HERB_MODEL_PATH = os.path.join(os.path.dirname(__file__), "xgb_herb_classification.json")
-QUALITY_MODEL_PATH = os.path.join(os.path.dirname(__file__), "xgb_quality_classification.json")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
 
-# Load the models
-herb_model = xgb.Booster()
-herb_model.load_model(HERB_MODEL_PATH)
+model = None
+try:
+    if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) > 0:
+        model = joblib.load(MODEL_PATH)
+        print("✅ Model loaded successfully")
+    else:
+        print("⚠️ No valid model found, using dummy predictions")
+except Exception as e:
+    print(f"⚠️ Could not load model: {e}")
+    model = None
 
-quality_model = xgb.Booster()
-quality_model.load_model(QUALITY_MODEL_PATH)
-
-def predict_taste(features: list) -> dict:
-    """
-    Run predictions using the herb and quality XGBoost models.
-    
-    Args:
-        features (list): Input sensor values as a list of floats.
-    
-    Returns:
-        dict: Predictions for herb type and quality.
-    """
-    # Convert input into XGBoost DMatrix
-    dmatrix = xgb.DMatrix(np.array([features]))
-
-    # Predictions (these return probabilities by default)
-    herb_probs = herb_model.predict(dmatrix)
-    quality_probs = quality_model.predict(dmatrix)
-
-    # Take the class with the highest probability
-    herb_pred = int(np.argmax(herb_probs))
-    quality_pred = int(np.argmax(quality_probs))
-
-    return {
-        "herb_prediction": herb_pred,
-        "quality_prediction": quality_pred
-    }
+def predict_taste(data):
+    if model is None:
+        # Temporary dummy prediction
+        return {"prediction": "unknown", "confidence": 0.0}
+    else:
+        return model.predict([data]).tolist()
