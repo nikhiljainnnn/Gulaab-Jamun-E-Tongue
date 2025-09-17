@@ -1,11 +1,11 @@
-from sqlmodel import SQLModel, create_engine, Session
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
-DATABASE_URL = "postgresql://postgres:2005@localhost:5432/gulaabjamun_db"
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME", "gulaabjamun_db")
 
-engine = create_engine(DATABASE_URL, echo=True)
-
-# Dependency for FastAPI routes
-def get_session():
-    with Session(engine) as session:
-        yield session
+client = AsyncIOMotorClient(MONGO_URI)
+db = client[DB_NAME]
