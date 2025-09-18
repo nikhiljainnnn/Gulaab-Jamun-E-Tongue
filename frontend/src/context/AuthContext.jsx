@@ -1,51 +1,94 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { authService } from '../services/api'
+import { auth } from '../firebase'
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
+    // Demo user persistence
+    const demo = localStorage.getItem('demo_user')
+    if (demo) {
+      setUser(JSON.parse(demo))
+      setDemoMode(true)
       setLoading(false)
       return
     }
-    authService
-      .me()
-      .then((data) => setUser(data))
-      .catch(() => {
-        localStorage.removeItem('token')
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          name: firebaseUser.displayName,
+        })
+      } else {
         setUser(null)
-      })
-      .finally(() => setLoading(false))
+      }
+      setLoading(false)
+    })
+    return () => unsubscribe()
   }, [])
 
   const login = async (email, password) => {
-    const data = await authService.login({ email, password })
-    if (data?.access_token) {
-      localStorage.setItem('token', data.access_token)
-      const me = await authService.me()
-      setUser(me)
-    }
-    return data
+    if (!auth) throw new Error('Firebase not configured')
+    const cred = await signInWithEmailAndPassword(auth, email, password)
+    return cred.user
   }
 
-  const register = async (payload) => {
-    const data = await authService.register(payload)
-    return data
+  const register = async ({ name, email, password }) => {
+    if (!auth) throw new Error('Firebase not configured')
+    const cred = await createUserWithEmailAndPassword(auth, email, password)
+    if (name) {
+      await updateProfile(cred.user, { displayName: name })
+    }
+    return cred.user
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
+    if (demoMode) {
+      localStorage.removeItem('demo_user')
+      setUser(null)
+      setDemoMode(false)
+      return
+    }
+    if (!auth) return
+    return signOut(auth)
   }
 
-  const value = useMemo(() => ({ user, loading, login, register, logout }), [user, loading])
+  // Demo user handlers
+  const loginDemo = () => {
+    const demoUser = {
+      uid: 'demo-uid',
+      email: 'demo@gjtongue.local',
+      name: 'Demo User',
+    }
+    localStorage.setItem('demo_user', JSON.stringify(demoUser))
+    setUser(demoUser)
+    setDemoMode(true)
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  const value = useMemo(() => ({ user, loading, login, register, logout, demoMode, loginDemo }), [user, loading, demoMode])
+  // Extended actions for UI
+  const googleProvider = new GoogleAuthProvider()
+  const loginWithGoogle = async () => {
+    if (!auth) throw new Error('Firebase not configured')
+    const cred = await signInWithPopup(auth, googleProvider)
+    return cred.user
+  }
+  const resetPassword = async (email) => {
+    if (!auth) throw new Error('Firebase not configured')
+    return sendPasswordResetEmail(auth, email)
+  }
+
+  return <AuthContext.Provider value={{ ...value, loginWithGoogle, resetPassword }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

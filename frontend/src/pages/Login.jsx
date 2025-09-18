@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
+import Spinner from '../components/Spinner'
 import { useAuth } from '../context/AuthContext'
+import { mapAuthError } from '../utils/authErrors'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -23,7 +25,34 @@ export default function Login() {
       await login(email, password)
       navigate('/dashboard')
     } catch (err) {
-      setError('Invalid credentials')
+      setError(mapAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const { loginWithGoogle, resetPassword } = useAuth()
+  const onGoogle = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      await loginWithGoogle()
+      navigate('/dashboard')
+    } catch (err) {
+      setError(mapAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+  const onReset = async () => {
+    if (!email) return setError('Enter your email to reset password')
+    setError('')
+    setLoading(true)
+    try {
+      await resetPassword(email)
+      setError('Password reset email sent')
+    } catch (err) {
+      setError(mapAuthError(err))
     } finally {
       setLoading(false)
     }
@@ -44,7 +73,11 @@ export default function Login() {
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</Button>
+            <Button type="submit" disabled={loading}>{loading ? (<><Spinner className="mr-2 h-4 w-4" /> Logging in...</>) : 'Login'}</Button>
+            <Button type="button" variant="ghost" onClick={onReset}>Forgot password?</Button>
+          </div>
+          <div className="pt-2">
+            <Button type="button" className="w-full" variant="muted" onClick={onGoogle}>Continue with Google</Button>
           </div>
         </form>
       </div>

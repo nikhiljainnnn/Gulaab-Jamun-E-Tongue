@@ -1,28 +1,80 @@
+# --- 1. Import Necessary Libraries ---
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import pandas as pd
-from src.utils.model_loader import loaded_models
+import pickle
+import os
 
-router = APIRouter(prefix="/predict", tags=["predict"])
+# --- 2. Define the EXACT Input Your Model Needs ---
+# This class creates automatic error checking for your API.
+#
+# !!! IMPORTANT !!!
+# You MUST replace 'feature1', 'feature2', etc., with the REAL
+# feature names your model was trained on. Check your CSV files
+# or 'feature_columns.json' for the correct names.
+class HerbPredictionInput(BaseModel):
+    feature1: str
+    feature2: float
+    feature3: int
+    # For example, it might be:
+    # color_intensity: float
+    # texture_value: float
+    # aroma_level: int
+    # ... add all other features your model needs here
 
-class InputData(BaseModel):
-    features: dict  # Example: {"sensor_1": 0.5, "sensor_2": 1.2, ...}
+# --- 3. Load Your New Model From the 'saved_models' Folder ---
+# This code runs only once when your application starts up.
+MODEL_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'saved_models', 'catboost_herb_classification.pkl')
 
-@router.post("/{model_name}")
-def predict(model_name: str, data: InputData):
+model = None
+try:
+    with open(MODEL_FILE_PATH, 'rb') as f:
+        model = pickle.load(f)
+    print(f"✅ Successfully loaded model from: {MODEL_FILE_PATH}")
+except Exception as e:
+    print(f"❌ CRITICAL ERROR: Could not load model. The API will not work.")
+    print(f"❌ Reason: {e}")
+
+# --- 4. Create the API Router for Predictions ---
+# This sets up the URL structure.
+router = APIRouter(
+    prefix="/predict",
+    tags=["Predictions"]  # This is for the automatic API documentation
+)
+
+# --- 5. Create the API Endpoint to Make Predictions ---
+# The URL for this will be: http://your-api-address/predict/herb
+@router.post("/herb")
+def predict_herb(input_data: HerbPredictionInput):
     """
-    Generic prediction endpoint:
-    - POST /predict/xgb_herb_classification
-    - POST /predict/xgb_quality_classification
+    Takes herb features as input and returns a classification prediction.
     """
-    if model_name not in loaded_models:
-        raise HTTPException(status_code=404, detail=f"Model '{model_name}' not found")
-
-    model = loaded_models[model_name]
-    df = pd.DataFrame([data.features])
+    if not model:
+        raise HTTPException(
+            status_code=503, # Service Unavailable
+            detail="Model is not available. Please check server logs for errors."
+        )
 
     try:
-        prediction = model.predict(df)[0]
-        return {"model": model_name, "prediction": str(prediction)}
+        # Convert the input data into a format the model understands (a DataFrame)
+        input_df = pd.DataFrame([input_data.dict()])
+
+        print("\nReceived data for prediction:")
+        print(input_df.to_string())
+
+        # Use the loaded model to make the prediction
+        prediction = model.predict(input_df)
+
+        # Send the result back in a clean JSON format
+        response = {
+            'predicted_class': str(prediction[0])
+        }
+        
+        print(f"🔮 Prediction successful: {response}")
+        return response
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        print(f"❌ Error during prediction process: {e}")
+        # If something goes wrong during prediction, send a clear error message.
+        raise HTTPException(status_code=400, detail=f"Failed to process prediction. Error: {e}")
+

@@ -48,6 +48,17 @@ async def get_test_results():
                     {"x": 5, "value": 0.8}
                 ],
                 "timestamp": "2024-01-15T11:00:00Z"
+            }, # <-- ✅ FIXED: Added the missing comma here
+            {
+                "_id": "result3",
+                "title": "Turmeric E-Tongue Profile",
+                "herb_id": "sample3", # <-- THIS IS THE CRUCIAL LINK!
+                "raw_data": [
+                    {"x": 0, "value": 0.3}, {"x": 1, "value": 0.5},
+                    {"x": 2, "value": 0.8}, {"x": 3, "value": 0.7},
+                    {"x": 4, "value": 0.4}, {"x": 5, "value": 0.2}
+                ],
+                "timestamp": "2024-01-15T12:00:00Z"
             }
         ]
         return sample_results
@@ -64,3 +75,6 @@ async def get_results_by_herb(herb_id: str):
     if not results:
         raise HTTPException(status_code=404, detail="No results found for this herb")
     return results
+
+# ✅ FIXED: Removed the duplicated code from the herbs router that was here
+

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const apiBaseUrl = (import.meta.env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
@@ -13,6 +13,10 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  // Ensure absolute URLs and avoid duplicated slashes
+  if (config.url && !/^https?:/i.test(config.url)) {
+    config.url = `${apiBaseUrl}${config.url.startsWith('/') ? '' : '/'}${config.url}`
   }
   return config
 })
@@ -36,7 +40,7 @@ export const authService = {
 // Herbs endpoints
 export const herbsService = {
   async list(params = {}) {
-    const { data } = await api.get('/herbs', { params })
+    const { data } = await api.get('/herbs/', { params })
     return data
   },
 }
@@ -44,7 +48,7 @@ export const herbsService = {
 // Test Results endpoints
 export const resultsService = {
   async list(params = {}) {
-    const { data } = await api.get('/test-results', { params })
+    const { data } = await api.get('/test-results/', { params })
     return data
   },
 }

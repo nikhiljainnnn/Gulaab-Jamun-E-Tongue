@@ -5,10 +5,10 @@ import Home from './pages/Home'
 import Herbs from './pages/Herbs'
 import Results from './pages/Results'
 import About from './pages/About'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -21,8 +21,8 @@ function App() {
             <Route path="/herbs" element={<Herbs />} />
             <Route path="/results" element={<Results />} />
             <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Auth initial="login" />} />
+            <Route path="/register" element={<Auth initial="register" />} />
             <Route
               path="/dashboard"
               element={
@@ -31,6 +31,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

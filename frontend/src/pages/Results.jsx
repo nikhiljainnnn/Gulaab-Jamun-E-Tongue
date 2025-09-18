@@ -25,8 +25,8 @@ export default function Results() {
         {items.map((item) => {
           const data = Array.isArray(item.raw_data) ? item.raw_data : []
           return (
-            <div key={item.id} className="card-surface p-5">
-              <p className="mb-3 font-medium">{item.title || `Result ${item.id}`}</p>
+            <div key={item._id || item.id} className="card-surface p-5">
+              <p className="mb-3 font-medium">{item.title || `Result ${item._id || item.id}`}</p>
               <div className="w-full h-64">
                 <ResponsiveContainer>
                   <LineChart data={data}>

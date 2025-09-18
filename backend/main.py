@@ -3,7 +3,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+
 import os
+import pandas as pd
+import pickle
+from catboost import CatBoostClassifier
 
 # Load .env variables
 load_dotenv()
